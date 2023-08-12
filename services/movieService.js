@@ -1,4 +1,6 @@
 const MovieRepository = require("../repositories/movieRepository.js");
+const fs = require("fs");
+const path = require("path");
 
 class MovieService {
   static async findAll() {
@@ -47,6 +49,20 @@ class MovieService {
         const update = await MovieRepository.updateYear(id, year);
         return update;
       }
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  static async deleteOldPhoto(photoName) {
+    try {
+      const photoPath = path.normalize(__dirname + `\\..` + `/uploads/` + photoName);
+      fs.unlink(photoPath, (err) => {
+        if (err) {
+          throw err;
+        }
+        return;
+      });
     } catch (err) {
       console.log(err);
     }

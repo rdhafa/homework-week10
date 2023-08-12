@@ -1,6 +1,4 @@
 const MovieService = require("../services/movieService.js");
-const fs = require("fs");
-const path = require("path");
 
 class MovieController {
   static async findAll(req, res, next) {
@@ -76,23 +74,18 @@ class MovieController {
       });
 
       // Check is new photo uploaded
-      const newPhoto = req.file.filename;
+      const newPhoto = req.file;
       if (newPhoto) {
         // Delete old photo from directory
-        const photoPath = path.normalize(__dirname + `\\..` + `/uploads/` + checkMovie.photo);
-        fs.unlink(photoPath, (err) => {
-          if (err) {
-            console.log(err);
-            throw err;
-          }
-        });
+        const deleteOldPhoto = await MovieService.deleteOldPhoto(checkMovie.photo);
 
-        const update = await MovieService.update(id, "photo", newPhoto);
+        const update = await MovieService.update(id, "photo", newPhoto.filename);
         if (!update) throw err;
       }
 
       res.status(200).send({ message: "Movie Updated Successfully!" });
     } catch (err) {
+      console.log(err);
       next(err);
     }
   }
@@ -103,13 +96,8 @@ class MovieController {
 
       // Delete photo from directory
       const getPhoto = await MovieService.findById(id);
-      const photoPath = path.normalize(__dirname + `\\..` + `/uploads/` + getPhoto.photo);
-      fs.unlink(photoPath, (err) => {
-        if (err) {
-          console.log(err);
-          throw err;
-        }
-      });
+      if (!getPhoto) throw { name: "MovieNotFound" };
+      const deleteOldPhoto = await MovieService.deleteOldPhoto(getPhoto.photo);
 
       // Delete database record
       const destroy = await MovieService.destroy(id);
