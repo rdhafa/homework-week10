@@ -27,9 +27,10 @@ class MovieController {
   static async create(req, res, next) {
     try {
       const { id, title, genres, year } = req.body;
-      const photo = req.file.filename;
-      if (id || !title || !genres || !year || !photo) throw { name: "BadRequest" };
+      const photoFile = req.file;
+      if (id || !title || !genres || !year || !photoFile) throw { name: "BadRequest" };
 
+      const photo = photoFile.filename;
       const movie = { title, genres, year, photo };
       const create = await MovieService.create(movie);
       if (!create) throw err;
